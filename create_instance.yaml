@@ -1,0 +1,124 @@
+---
+- hosts: localhost
+  #  become: yes
+  tasks:
+  - os_network:
+      cloud: project
+      state: present
+      name: int_network
+      external: false
+    register: internal
+    tags: 
+      - projected
+  - os_subnet:
+      cloud: project
+      state: present
+      network_name: int_network
+      name: int_subnet
+      cidr: 20.20.20.0/24
+      dns_nameservers:
+         - 8.8.8.7
+         - 8.8.8.8
+      host_routes:
+         - destination: 0.0.0.0/0
+           nexthop: 192.168.0.0
+         - destination: 192.168.0.0/24
+           nexthop: 192.168.0.0
+    tags: 
+      - projected
+  - os_router:
+      cloud: project
+      state: present
+      name: router1
+      network: ext_network
+      external_fixed_ips:
+        - subnet: external_subnet
+      interfaces:
+        - int_subnet
+    tags: 
+      - projected
+  - os_security_group:
+      cloud: project
+      state: present
+      name: ICMP_and_SSH
+      description: ICMP and SSH enabled
+    tags: 
+      - projected
+  - os_security_group_rule:
+      cloud: project
+      security_group: ICMP_and_SSH
+      protocol: tcp
+      port_range_min: 22
+      port_range_max: 22
+      remote_ip_prefix: 0.0.0.0/0
+    tags: 
+      - projected
+  - os_security_group_rule:
+      cloud: project
+      security_group: ICMP_and_SSH
+      protocol: tcp
+      port_range_min: 80
+      port_range_max: 80
+      remote_ip_prefix: 0.0.0.0/0
+  - os_security_group_rule:
+      cloud: project
+      security_group: ICMP_and_SSH
+      protocol: icmp
+      remote_ip_prefix: 0.0.0.0/0
+    tags: 
+      - projected
+  - name: Generate key files
+    user:
+      name: "{{ ansible_env.USER }}"
+      generate_ssh_key: yes
+      ssh_key_file: .ssh/project_id_rsa
+    tags: 
+      - projected
+  - os_keypair:
+      cloud: project
+      state: present
+      name: ansible_ssh
+      public_key_file: "{{ ansible_env.HOME }}/.ssh/project_id_rsa.pub" 
+    tags: 
+      - projected
+  - name: Download RHEL image
+    get_url:
+      url: http://www.opentlc.com/download/osp_advanced_networking/rhel-guest-image-7.2-20151102.0.x86_64.qcow2
+      dest: /tmp/rhel.qcow2
+    tags: 
+      - projected
+  - os_image:
+      cloud: project
+      name: rhel-guest
+      container_format: bare
+      disk_format: qcow2
+      state: present
+      filename: /tmp/rhel.qcow2
+    tags: 
+      - projected
+  - name: Create a server instance
+    os_server:
+      cloud: project
+      name: webserver
+      image: rhel-guest
+      flavor: m1.small
+      security_groups: ICMP_and_SSH
+      key_name: ansible_ssh
+      nics:
+      - net-name: int_network
+    register: webserverip
+  - name: Show webserver private IP
+    debug: var=webserverip.openstack.private_v4  
+  - name: Add floating IP
+    os_floating_ip:
+      cloud: project
+      state: present
+      reuse: yes
+      server: webserver
+      network: ext_network
+#      fixed_address: "{{ webserverip }}"
+      wait: true
+      timeout: 180
+    register: webserverfloatingip
+  - name: Show webserver public IP
+    debug: var=webserverfloatingip.floating_ip.floating_ip_address 

@@ -1,0 +1,26 @@
+---
+- hosts: 35.184.80.231
+  #  become: yes
+  tasks:
+  - os_network:
+      cloud: test
+      state: present
+      name: ext_network
+      external: true
+    tags: 
+      - tested
+  - os_subnet:
+      cloud: test
+      state: present
+      network_name: ext_network
+      name: external_subnet
+      cidr: 10.10.10.0/24
+      dns_nameservers:
+         - 8.8.8.7
+         - 8.8.8.8
+      host_routes:
+         - destination: 0.0.0.0/0
+           nexthop: 10.10.10.0
+         - destination: 192.168.0.0/24
+           nexthop: 192.168.0.0
+
