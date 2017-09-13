@@ -1,0 +1,23 @@
+---
+- hosts: localhost
+  #  become: yes
+  tasks:
+  - name: Create project
+    os_project:
+#          cloud: test
+          state: present
+          name: testproject2
+          description: testing
+          enabled: True
+          region_name: RegionOne
+          domain_id: default
+    tags: 
+      - tested
+  - name: Create User
+    os_user:
+          state: present
+          name: testuser
+          password: redhat
+          email: testuser@localhost
+          domain_id: default
+          default_project: test 
