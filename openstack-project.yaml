@@ -1,5 +1,5 @@
 ---
-- hosts: localhost
+- hosts: 35.184.80.231
   #  become: yes
   tasks:
   - name: Create project
