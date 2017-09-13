@@ -1,0 +1,5 @@
+---
+- name: Ping servers
+  tasks:
+  - name: Check server
+    ping:
