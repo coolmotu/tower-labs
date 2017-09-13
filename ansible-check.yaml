@@ -1,5 +1,5 @@
 ---
-- name: Ping servers
+- hosts: localhost
   tasks:
   - name: Check server
     ping:
