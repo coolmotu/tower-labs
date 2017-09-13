@@ -4,7 +4,7 @@
   tasks:
   - name: Create project
     os_project:
-#          cloud: test
+          cloud: test
           state: present
           name: testproject2
           description: testing
@@ -15,6 +15,7 @@
       - tested
   - name: Create User
     os_user:
+          cloud: test
           state: present
           name: testuser
           password: redhat
