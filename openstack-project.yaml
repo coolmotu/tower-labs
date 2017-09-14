@@ -22,3 +22,9 @@
           email: testuser@localhost
           domain: default
           default_project: testproject2 
+   - name: Role Assingment to user
+     os_user_role:
+          cloud: test
+          user: testuser
+          role: _member_
+          project: testproject2
