@@ -21,4 +21,4 @@
           password: redhat
           email: testuser@localhost
           domain: default
-          default_project: test 
+          default_project: testproject2 
