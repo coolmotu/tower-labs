@@ -20,5 +20,5 @@
           name: testuser
           password: redhat
           email: testuser@localhost
-          domain_id: default
+          domain: default
           default_project: test 
